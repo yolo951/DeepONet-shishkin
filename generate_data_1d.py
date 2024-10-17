@@ -86,14 +86,10 @@ class GRF(object):
         self.L = np.linalg.cholesky(self.K + 1e-13 * np.eye(self.N))
 
     def random(self, n, A):
-        """Generate `n` random feature vectors.
-        """
         u = np.random.randn(self.N, n)
         return np.dot(self.L, u).T + A
 
     def eval_u_one(self, y, x):
-        """Compute the function value at `x` for the feature `y`.
-        """
         if self.interp == "linear":
             return np.interp(x, np.ravel(self.x), y)
         f = interpolate.interp1d(
@@ -102,9 +98,6 @@ class GRF(object):
         return f(x)
 
     def eval_u(self, ys, sensors):
-        """For a list of functions represented by `ys`,
-        compute a list of a list of function values at a list `sensors`.
-        """
         if self.interp == "linear":
             return np.vstack([np.interp(sensors, np.ravel(self.x), y).T for y in ys])
 
@@ -119,13 +112,6 @@ def weighted_mse_loss(y_pred, y_true, weights):
     squared_errors = torch.square(y_pred - y_true)
     weighted_errors = squared_errors * weights
     return torch.sum(weighted_errors)
-'''
-def transform_outputs(y,weights):
-    norm = torch.norm(y*torch.sqrt(weights))  # 计算二范数
-    y_normalized = y / norm  # 对输入张量进行归一化
-    return y_normalized,norm
-'''
-
 
 # loss function with rel/abs Lp loss
 class LpLoss(object):

@@ -57,16 +57,12 @@ for EP in EP_list:
             gridS = np.linspace(0, 1, NS)
             grid_h = np.linspace(0, 1, N_max)
 
-
-
         grid_vec=np.zeros((NS**2,2))
         u_train = np.array([generate_data_2d.grid_to_vec(interpolate.interp2d(grid_h, grid_h, y)(gridS, gridS), NS) for y in u_train_h])
         f_train = np.array([generate_data_2d.grid_to_vec(y, NS) for y in f_train])
         for j in range(NS):
             for i in range(NS):
                 grid_vec[j*NS+i]=[gridS[i],gridS[j]]
-
-
 
         dim = NS
         N = f_train.shape[0]
@@ -84,7 +80,7 @@ for EP in EP_list:
         res_train = torch.Tensor(res).to(device)
         train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(f_train, loc_train, res_train), batch_size=batch_size, shuffle=True)
 
-        model = deeponet.DeepONet(dim ** 2, 2).to(device)
+        model = deeponet.DeepONet2D(dim ** 2, 2).to(device)
         optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
         #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.999)
@@ -194,34 +190,34 @@ for NS in N_list:
     plt.title("N = {}".format(NS))
     plt.legend()
     plt.show()
-'''
-N=2**5+1
-EP = 0.001
-S=65
-sigma_S = min(1 / 2, EP * np.log(S) / alpha)
-sigma_N = min(1 / 2, EP * np.log(N) / alpha)
-gridN = np.hstack(
-        (np.linspace(0, 1 - sigma_N, int((N - 1) / 2) + 1), np.linspace(1 - sigma_N, 1, int((N - 1) / 2) + 1)[1:]))
-gridS = np.hstack(
-        (np.linspace(0, 1 - sigma_S, int((S - 1) / 2) + 1), np.linspace(1 - sigma_S, 1, int((S - 1) / 2) + 1)[1:])).reshape((-1,1))
-f=torch.tensor(np.ones((S**2,N**2)), dtype=torch.float).to(device)
-grid_vec = np.zeros((S ** 2, 2))
-for j in range(S):
-    for i in range(S):
-        grid_vec[j * S + i] = [gridS[i], gridS[j]]
-grid_vec=torch.Tensor(grid_vec).to(device)
-y=model(f,grid_vec).view(-1)/100
-y=y.cpu()
-y=y.detach().numpy()
-y=generate_data_2d.vec_to_grid(y,S)
-gridS = np.hstack(
-        (np.linspace(0, 1 - sigma_S, int((S - 1) / 2) + 1), np.linspace(1 - sigma_S, 1, int((S - 1) / 2) + 1)[1:])).reshape((-1,1))
-f=np.ones((1,S,S))
-y1=generate_data_2d.FD_AD_2d(f,EP)/100
-xx,yy=np.meshgrid(gridS,gridS)
-plt.figure()
-ax3 = plt.axes(projection='3d')
-ax3.plot_surface(xx,yy,y,cmap='rainbow')
-# ax3.plot_surface(xx,yy,y1[0],cmap='rainbow')
-plt.show()
-'''
+
+# N=2**5+1
+# EP = 0.001
+# S=65
+# sigma_S = min(1 / 2, EP * np.log(S) / alpha)
+# sigma_N = min(1 / 2, EP * np.log(N) / alpha)
+# gridN = np.hstack(
+#         (np.linspace(0, 1 - sigma_N, int((N - 1) / 2) + 1), np.linspace(1 - sigma_N, 1, int((N - 1) / 2) + 1)[1:]))
+# gridS = np.hstack(
+#         (np.linspace(0, 1 - sigma_S, int((S - 1) / 2) + 1), np.linspace(1 - sigma_S, 1, int((S - 1) / 2) + 1)[1:])).reshape((-1,1))
+# f=torch.tensor(np.ones((S**2,N**2)), dtype=torch.float).to(device)
+# grid_vec = np.zeros((S ** 2, 2))
+# for j in range(S):
+#     for i in range(S):
+#         grid_vec[j * S + i] = [gridS[i], gridS[j]]
+# grid_vec=torch.Tensor(grid_vec).to(device)
+# y=model(f,grid_vec).view(-1)/100
+# y=y.cpu()
+# y=y.detach().numpy()
+# y=generate_data_2d.vec_to_grid(y,S)
+# gridS = np.hstack(
+#         (np.linspace(0, 1 - sigma_S, int((S - 1) / 2) + 1), np.linspace(1 - sigma_S, 1, int((S - 1) / 2) + 1)[1:])).reshape((-1,1))
+# f=np.ones((1,S,S))
+# y1=generate_data_2d.FD_AD_2d(f,EP)/100
+# xx,yy=np.meshgrid(gridS,gridS)
+# plt.figure()
+# ax3 = plt.axes(projection='3d')
+# ax3.plot_surface(xx,yy,y,cmap='rainbow')
+# # ax3.plot_surface(xx,yy,y1[0],cmap='rainbow')
+# plt.show()
+

@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jul 12 17:03:46 2022
 
-@author: Ye Li
-"""
 
 import torch
 import numpy as np
@@ -11,7 +6,6 @@ from scipy import interpolate
 from sklearn import gaussian_process as gp
 
 #-eps*(u_xx+u_yy)+p1*u_x+p2*u_y+q*u=f
-#返回shape=(Nd,N,N)的数组y，y[k]表示由f[k]得到的数值解，第i行=u(x,y_i),可以直接用于插值
 def FD_AD_2d(f, epsilon, meshtype='Shishkin'):
     def p1(x,y):
         return 1  # p(x)>=alpha=1
@@ -19,7 +13,7 @@ def FD_AD_2d(f, epsilon, meshtype='Shishkin'):
         return 1
     def q(x,y):
         return 1
-    alpha = 1#p1和p2共同的下界
+    alpha = 1 #p1和p2共同的下界
 
 
     N = f.shape[-1]
@@ -97,7 +91,7 @@ def FD_AD_2d(f, epsilon, meshtype='Shishkin'):
         return yS*100
     else:
         return y*100
-def vec_to_grid(x,N):#返回size为(N,N)的数组
+def vec_to_grid(x,N): #返回size为(N,N)的数组
     res = np.zeros((N, N))
     if N**2==x.shape[0]:
         for i in range(N):
@@ -109,7 +103,7 @@ def vec_to_grid(x,N):#返回size为(N,N)的数组
         for i in range(N):
             res[i]= x[(i+1)*(N+2)+1:(i+2)*(N+2)-1].T
     return res
-def grid_to_vec(X,N):#返回size为(N**2,1)的数组
+def grid_to_vec(X,N): #返回size为(N**2,1)的数组
     n=X.shape[0]
     res = np.zeros((N ** 2, 1))
     if n==N:
@@ -153,17 +147,11 @@ class GRF(object):
 
 
     def random(self, n, A):
-        """Generate `n` random feature vectors.
-        """
         u = np.random.randn(self.N**2, n)
         return np.dot(self.L, u).T + A
 
 
     def eval_u(self, ys, x,y):
-        """For a list of functions represented by `ys`,
-        compute a list of a list of function values at a list `sensors`.
-        """
-
         res = np.zeros((ys.shape[0], x.shape[0],x.shape[0]))
         for i in range(ys.shape[0]):
             res[i] = interpolate.interp2d(self.x,self.x, ys[i], kind=self.interp, copy=False)(

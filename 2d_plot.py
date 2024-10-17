@@ -1,25 +1,19 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr  8 07:12:53 2023
-
-@author: Administrator
-"""
 
 import torch
-import v2_deeponet
+import deeponet
 from scipy import interpolate
 import importlib
 import generate_data_2d
 importlib.reload(generate_data_2d)
-importlib.reload(v2_deeponet)
+importlib.reload(deeponet)
 import numpy as np
 import matplotlib.pyplot as plt
 
-i_sample = 88  # 0到199之间的数，测试集中第i个样本
+i_sample = 88
 
 EP = 0.001
 NS = 65
-N_max = (NS-1)*8 + 1  # 细网格上插值，图平滑好看点
+N_max = (NS-1)*8 + 1
 alpha = 1
 meshtype = "Shishkin"
 
@@ -100,7 +94,6 @@ plt.figure()
 plt.pcolor(X1, X2, np.abs(Yt-Yp_equal), cmap='jet')
 plt.colorbar()
 plt.savefig(r"D:\mypaper\eajam\6_equal_error.png", dpi=80)
-# 还可以把边界层附近(1-sigma,1)的图单独画出来
 plt.figure()
 plt.pcolor(X1[int(N_max/2):, int(N_max/2):], X2[int(N_max/2):, int(N_max/2):], np.abs(Yt[int(N_max/2):, int(N_max/2):]-Yp[int(N_max/2):, int(N_max/2):]), cmap='jet')
 plt.colorbar()
@@ -110,5 +103,5 @@ plt.pcolor(X1[int(N_max/2):, int(N_max/2):], X2[int(N_max/2):, int(N_max/2):], n
 plt.colorbar()
 plt.savefig(r"D:\mypaper\eajam\6_equal_sub.png", dpi=80)
 
-# plt.show()
+plt.show()
 

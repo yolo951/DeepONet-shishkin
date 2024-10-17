@@ -1,5 +1,4 @@
 
-
 import importlib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,34 +11,25 @@ from scipy import interpolate
 # from generate_date import *
 import generate_data_1d
 
-
 importlib.reload(generate_data_1d)
 importlib.reload(deeponet)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 meshtype = "Shishkin"  # "Shishkin" or "Equal"
 ntrain = 1000
 
 learning_rate = 0.001
 epochs = 250
-step_size =20 # 每隔step_size个epoch时调整学习率为当前学习率乘gamma
+step_size =20
 gamma =0.5
 alpha = 1
-
 EP_list = [0.001]  # 1/2**6]#, 1/2**7, 1/2**8, 1/2**9, 1/2**10, 1/2**11]
-
-
 N_list = [2**8+1]  # , 2**7+1, 2**8+1, 2**9+1, 2**10+1]
 N_max=2**8+1
 
-
 f_test_h = generate_data_1d.generate(samples=100,out_dim=N_max)  #np.load('f_test.npy')
 N_max = f_test_h.shape[-1]
-
 f_train_h=f_test_h[:ntrain,:]
-
-
 loss_history = dict()
 
 
@@ -100,7 +90,6 @@ for EP in EP_list:
         model = deeponet.DeepONet(dim, 1).to(device)
         optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-        # 每step_size个epoch，将学习率更新为gamma*learing_rate
         start = default_timer()
         myloss = generate_data_1d.LpLoss(size_average=False)
         for ep in range(epochs):
@@ -112,10 +101,10 @@ for EP in EP_list:
                 out = model(x, l)
                 # mse = generate_data_1d.weighted_mse_loss(out.view(out.numel(), -1), y.view(y.numel(), -1), w.view(w.numel(), -1))
                 mse = F.mse_loss(out.view(out.numel(), -1), y.view(y.numel(), -1), reduction='mean')
-                mse.backward()  # 计算梯度
-                optimizer.step()  # 更新神经网络参数，例如权重和阈值te
+                mse.backward()
+                optimizer.step()
                 train_mse += mse.item()
-            scheduler.step()  # 每训练一个epoch，更新一次学习率
+            scheduler.step()
             # train_mse /= ntrain
             train_mse /= len(train_loader)
             t2 = default_timer()
@@ -125,57 +114,57 @@ for EP in EP_list:
 
         print('Total training time:', default_timer() - start, 's')
         loss_history["{} {}".format(NS, EP)] = mse_history
-'''
-        f_test = torch.Tensor(f_train_h[:, ::dN])  # f_test.shape=ntrain*NS
-        dim = f_train_h.shape[-1]
-        grid = np.linspace(0, 1, dim)
-        N = f_train_h.shape[0] * dim
-        loc = np.zeros((N, 1))
-        res = np.zeros((N, 1))
-        f = np.zeros((N, f_test.shape[-1]))
-        u_train_h0 = interpolate.interp1d(grid_h, u_train_h)(grid)
-        weights_test = np.zeros((N, 1))
-        for i in range(N):
-            f[i] = f_test[i // dim]
-            loc[i, 0] = grid[i % dim]
-            res[i, 0] = u_train_h0[i // dim, i % dim]
-            weights_test[i, 0] = weights_h[i % dim]
-        f_test = torch.Tensor(f)
-        loc = torch.Tensor(loc)
-        res = torch.Tensor(res)
-        weights_test = torch.tensor(weights_test)
-        #f_test_transform = (f_test - mean) / std
-        #res_test_transform=res/res_weight_norm
-        test_h_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(f_test,
-                                                                                   loc, res, weights_test),
-                                                    batch_size=dim, shuffle=False)
 
-        pred_h = torch.zeros(u_train_h0.shape)
-        index = 0
-        test_mse = 0
-        test_l2 = 0
-        with torch.no_grad():  # 表示不再计算梯度，以免对之前的梯度产生影响，也节省计算耗费
-            for x, l, y, w in test_h_loader:
-                out = model(x, l).view(-1)
-                pred_h[index] = out
-                mse = weighted_mse_loss(out.view(out.numel(), -1), y.view(y.numel(), -1), w.view(w.numel(), -1))
-                #mse = F.mse_loss(out.view(1, -1), y.view(1, -1), reduction='mean')
-                l2 = myloss(out.view(1, -1), y.view(1, -1))
-                test_mse += mse.item()
-                test_l2 += l2.item()
-                index += 1
-            test_mse /= ntrain
-            #test_mse /= len(test_h_loader)
-            test_l2 /= ntrain
-            print('test error on high resolution: L2 = ', test_l2, 'MSE =', test_mse)
+        # f_test = torch.Tensor(f_train_h[:, ::dN])  # f_test.shape=ntrain*NS
+        # dim = f_train_h.shape[-1]
+        # grid = np.linspace(0, 1, dim)
+        # N = f_train_h.shape[0] * dim
+        # loc = np.zeros((N, 1))
+        # res = np.zeros((N, 1))
+        # f = np.zeros((N, f_test.shape[-1]))
+        # u_train_h0 = interpolate.interp1d(grid_h, u_train_h)(grid)
+        # weights_test = np.zeros((N, 1))
+        # for i in range(N):
+        #     f[i] = f_test[i // dim]
+        #     loc[i, 0] = grid[i % dim]
+        #     res[i, 0] = u_train_h0[i // dim, i % dim]
+        #     weights_test[i, 0] = weights_h[i % dim]
+        # f_test = torch.Tensor(f)
+        # loc = torch.Tensor(loc)
+        # res = torch.Tensor(res)
+        # weights_test = torch.tensor(weights_test)
+        # #f_test_transform = (f_test - mean) / std
+        # #res_test_transform=res/res_weight_norm
+        # test_h_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(f_test,
+        #                                                                            loc, res, weights_test),
+        #                                             batch_size=dim, shuffle=False)
 
-        # residual = pred_h-u_train_h
-        # fig = plt.figure()
-        # x_grid = np.linspace(0, 1, N_max)
-        # for i in range(100):
-        #    plt.plot(x_grid,residual[i].detach().numpy())
-        # plt.show()
-'''
+        # pred_h = torch.zeros(u_train_h0.shape)
+        # index = 0
+        # test_mse = 0
+        # test_l2 = 0
+        # with torch.no_grad():  # 表示不再计算梯度，以免对之前的梯度产生影响，也节省计算耗费
+        #     for x, l, y, w in test_h_loader:
+        #         out = model(x, l).view(-1)
+        #         pred_h[index] = out
+        #         mse = weighted_mse_loss(out.view(out.numel(), -1), y.view(y.numel(), -1), w.view(w.numel(), -1))
+        #         #mse = F.mse_loss(out.view(1, -1), y.view(1, -1), reduction='mean')
+        #         l2 = myloss(out.view(1, -1), y.view(1, -1))
+        #         test_mse += mse.item()
+        #         test_l2 += l2.item()
+        #         index += 1
+        #     test_mse /= ntrain
+        #     #test_mse /= len(test_h_loader)
+        #     test_l2 /= ntrain
+        #     print('test error on high resolution: L2 = ', test_l2, 'MSE =', test_mse)
+
+        # # residual = pred_h-u_train_h
+        # # fig = plt.figure()
+        # # x_grid = np.linspace(0, 1, N_max)
+        # # for i in range(100):
+        # #    plt.plot(x_grid,residual[i].detach().numpy())
+        # # plt.show()
+
 for NS in N_list:
     plt.figure()
     for EP in EP_list:
@@ -184,9 +173,6 @@ for NS in N_list:
     plt.title("N = {}".format(NS))
     plt.legend()
     plt.show()
-
-
-
 
 # for NS in N_list:
 #     plt.figure()
